@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -5,9 +6,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Itinerary, ItineraryDay } from "@/lib/types";
-import { Sunrise, Sun, Moon, Utensils, TramFront, NotebookText, Lightbulb, Map } from 'lucide-react';
+import { Sunrise, Sun, Moon, Utensils, TramFront, NotebookText, Lightbulb, Map, Hotel, Plane, Briefcase } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ItineraryDisplayProps = {
   itinerary: Itinerary | null;
@@ -92,6 +96,7 @@ function ItinerarySkeleton() {
                 <Skeleton className="mt-2 h-4 w-1/2 rounded-md" />
             </CardHeader>
             <CardContent className="space-y-4">
+                <Skeleton className="h-10 w-full rounded-md" />
                 <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
                     {[...Array(3)].map((_, i) => (
                         <AccordionItem value={`item-${i}`} key={i}>
@@ -160,18 +165,78 @@ export function ItineraryDisplay({ itinerary, isGenerating, destination }: Itine
         </div>
       </CardHeader>
       <CardContent>
-        <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-          {itinerary.itinerary.map((day, index) => (
-            <AccordionItem value={`item-${index}`} key={day.day}>
-              <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                <span className="truncate">Day {day.day}: {day.title}</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <ItineraryDayView dayData={day} />
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <Tabs defaultValue="itinerary">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
+            <TabsTrigger value="hotels">Hotels</TabsTrigger>
+            <TabsTrigger value="flights">Flights</TabsTrigger>
+            <TabsTrigger value="packing">Packing List</TabsTrigger>
+          </TabsList>
+          <TabsContent value="itinerary" className="mt-4">
+            <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+              {itinerary.itinerary.map((day, index) => (
+                <AccordionItem value={`item-${index}`} key={day.day}>
+                  <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                    <span className="truncate">Day {day.day}: {day.title}</span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ItineraryDayView dayData={day} />
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </TabsContent>
+          <TabsContent value="hotels" className="mt-4">
+            <div className="space-y-4">
+              {itinerary.hotel_recommendations.map((hotel, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-xl flex items-center gap-2"><Hotel className="h-5 w-5" />{hotel.name}</CardTitle>
+                        <CardDescription>{hotel.price_range}</CardDescription>
+                      </div>
+                      <Button asChild>
+                        <Link href={hotel.booking_link} target="_blank">Book Now</Link>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="flights" className="mt-4">
+             <div className="space-y-4">
+              {itinerary.flight_recommendations.map((flight, index) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-xl flex items-center gap-2"><Plane className="h-5 w-5" />{flight.airline}</CardTitle>
+                        <CardDescription>{flight.price_range}</CardDescription>
+                      </div>
+                      <Button asChild>
+                        <Link href={flight.booking_link} target="_blank">Book Now</Link>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="packing" className="mt-4">
+            <Card>
+              <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2"><Briefcase className="h-5 w-5" />Packing List</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  {itinerary.packing_list.map((item, index) => <li key={index}>{item}</li>)}
+                </ul>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </CardContent>
       <CardFooter>
         <Alert>

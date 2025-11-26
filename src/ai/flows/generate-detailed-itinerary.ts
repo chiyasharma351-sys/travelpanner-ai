@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Generates a detailed travel itinerary based on user input.
@@ -36,6 +37,21 @@ const GenerateDetailedItineraryOutputSchema = z.object({
     })
   ).describe('The detailed day-wise itinerary.'),
   tips: z.string().describe('Travel tips relevant to the destination.'),
+  hotel_recommendations: z.array(
+    z.object({
+      name: z.string().describe('Name of the hotel.'),
+      price_range: z.string().describe('Price range for the hotel.'),
+      booking_link: z.string().url().describe('A link to book the hotel.')
+    })
+  ).describe('A list of hotel recommendations.'),
+  flight_recommendations: z.array(
+    z.object({
+      airline: z.string().describe('Name of the airline.'),
+      price_range: z.string().describe('Price range for the flight.'),
+      booking_link: z.string().url().describe('A link to book the flight.')
+    })
+  ).describe('A list of flight recommendations.'),
+  packing_list: z.array(z.string()).describe('A list of items to pack for the trip.'),
 });
 export type GenerateDetailedItineraryOutput = z.infer<typeof GenerateDetailedItineraryOutputSchema>;
 
@@ -71,6 +87,10 @@ Food recommendations based on budget_type
 Cost-conscious suggestions for economical / comfort options for standard / premium experiences for luxury
 Provide weather, safety, and transport tips relevant for the destination.
 
+Also provide hotel and flight recommendations based on the budget. For links, use placeholder URLs like "https://www.example.com/booking".
+
+Also generate a packing list unique to the destination and weather conditions.
+
 {{#if previous_itineraries}}
   Reference the following previous itineraries naturally—do NOT repeat them. Use them only to personalize recommendations.
   Previous Itineraries: {{{previous_itineraries}}}
@@ -78,11 +98,7 @@ Provide weather, safety, and transport tips relevant for the destination.
 
 Maintain a friendly, travel-guide tone but ensure accuracy and helpfulness.
 
-Always output in the following JSON format:
-
-{ "trip_summary": "...", "total_days": number, "itinerary": [ { "day": 1, "title": "Day 1: ...", "morning": "...", "afternoon": "...", "evening": "...", "commute": "...", "food": "...", "notes": "..." } ], "tips": "..." }
-
-Your goal is to help the user plan the perfect trip based on their preferences.
+Always output in the following JSON format.
 `,
 });
 
